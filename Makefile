@@ -2,6 +2,8 @@
 
 TOPIC ?= "Artificial Intelligence"
 
+DOCKER_COMPOSE ?= $(shell if command -v docker-compose >/dev/null 2>&1; then echo "docker-compose"; else echo "docker compose"; fi)
+
 help:
 	@echo "Available commands:"
 	@echo "  make setup            Install Python dependencies"
@@ -25,13 +27,13 @@ test:
 	python3 -m unittest discover tests
 
 docker-up:
-	docker compose up -d
+	$(DOCKER_COMPOSE) up -d
 
 docker-down:
-	docker compose down
+	$(DOCKER_COMPOSE) down
 
 docker-logs:
-	docker compose logs -f ollama
+	$(DOCKER_COMPOSE) logs -f ollama
 
 pull-model:
 	./scripts/pull-model.sh
