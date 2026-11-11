@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable
+from typing import Any
 
 from shared.config import Settings, get_config
 from shared.prompts import (
@@ -15,10 +15,7 @@ from shared.wikipedia_tool import wikipedia_research
 
 logger = logging.getLogger(__name__)
 
-
-# ---------------------------------------------------------------------------
 # 1. Wikipedia Tool definition for Strands Agents
-# ---------------------------------------------------------------------------
 def _define_wikipedia_tool() -> Any:
     """Register wikipedia_research as a Strands agent tool with docstring schema."""
     try:
@@ -46,10 +43,7 @@ def _define_wikipedia_tool() -> Any:
 
 wikipedia_tool = _define_wikipedia_tool()
 
-
-# ---------------------------------------------------------------------------
 # 2. Strands Ollama Model Provider Factory
-# ---------------------------------------------------------------------------
 def get_strands_model(config: Settings | None = None) -> Any:
     """Instantiate the native Strands Ollama model provider."""
     cfg = config or get_config()
@@ -60,16 +54,12 @@ def get_strands_model(config: Settings | None = None) -> Any:
             host=cfg.ollama_host,
             model_id=cfg.model_name,
             temperature=cfg.temperature,
-            timeout=cfg.request_timeout,
+            ollama_client_args={"timeout": cfg.request_timeout},
         )
     except ImportError:
         logger.debug("strands.models.ollama not installed; using fallback model.")
         return None
 
-
-# ---------------------------------------------------------------------------
-# 3. Fallback Agent implementation for tests/environments without strands-agents
-# ---------------------------------------------------------------------------
 class FallbackStrandsAgent:
     """Lightweight fallback matching the Strands Agent callable interface."""
 
@@ -94,9 +84,7 @@ class FallbackStrandsAgent:
         return f"[{self.name} Response] Processed: {prompt[:80]}"
 
 
-# ---------------------------------------------------------------------------
-# 4. Agent Factory Functions
-# ---------------------------------------------------------------------------
+# 3. Agent Factory Functions
 def create_researcher_agent(
     model: Any,
     config: Settings | None = None,
@@ -104,6 +92,15 @@ def create_researcher_agent(
     """Create the Researcher Agent equipped with the Wikipedia tool."""
     try:
         from strands import Agent
+        from strands.models.model import Model
+
+        if model is not None and not isinstance(model, (Model, str)):
+            return FallbackStrandsAgent(
+                name="Researcher",
+                system_prompt=RESEARCHER_SYSTEM_PROMPT,
+                tools=[wikipedia_tool],
+                model=model,
+            )
 
         return Agent(
             model=model,
@@ -126,6 +123,15 @@ def create_analyst_agent(
     """Create the Analyst Agent focused on strategic evaluation."""
     try:
         from strands import Agent
+        from strands.models.model import Model
+
+        if model is not None and not isinstance(model, (Model, str)):
+            return FallbackStrandsAgent(
+                name="Analyst",
+                system_prompt=ANALYST_SYSTEM_PROMPT,
+                tools=[],
+                model=model,
+            )
 
         return Agent(
             model=model,
@@ -148,6 +154,15 @@ def create_summarizer_agent(
     """Create the Summarizer Agent for executive synthesis."""
     try:
         from strands import Agent
+        from strands.models.model import Model
+
+        if model is not None and not isinstance(model, (Model, str)):
+            return FallbackStrandsAgent(
+                name="Summarizer",
+                system_prompt=SUMMARIZER_SYSTEM_PROMPT,
+                tools=[],
+                model=model,
+            )
 
         return Agent(
             model=model,

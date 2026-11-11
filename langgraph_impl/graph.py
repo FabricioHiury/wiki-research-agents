@@ -24,7 +24,7 @@ class SequentialFallbackGraph:
 
     def invoke(self, initial_state: dict[str, Any]) -> dict[str, Any]:
         state = dict(initial_state)
-        for name, node_func in self.nodes:
+        for _name, node_func in self.nodes:
             output = node_func(state)
             state.update(output)
         return state

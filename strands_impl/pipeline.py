@@ -49,7 +49,6 @@ def run_strands_pipeline(
     """
     cfg = config or get_config()
 
-    # Pre-flight server check
     if check_server and custom_model is None:
         ok, msg = check_ollama_status(host=cfg.ollama_host, model_name=cfg.model_name)
         if not ok:
@@ -78,12 +77,9 @@ def run_strands_pipeline(
     start_time = time.perf_counter()
 
     try:
-        # ----------------------------------------------------------------------
         # Step 1: Researcher Agent
-        # ----------------------------------------------------------------------
         print_agent_step("Researcher", f"Researching topic '{topic}' using Wikipedia tool...")
 
-        # In local Ollama, ensure tool information is explicitly available to Researcher
         tool_facts = wikipedia_research(topic)
         tool_calls += 1
 
@@ -107,9 +103,7 @@ def run_strands_pipeline(
         llm_calls += 1
         print_agent_step("Researcher", "Factual research brief compiled.", research_output[:180])
 
-        # ----------------------------------------------------------------------
         # Step 2: Analyst Agent
-        # ----------------------------------------------------------------------
         print_agent_step("Analyst", "Analyzing research findings and implications...")
         analyst_prompt = format_analyst_input(topic, research_output)
 
@@ -125,9 +119,7 @@ def run_strands_pipeline(
         llm_calls += 1
         print_agent_step("Analyst", "Analytical assessment complete.", analysis_output[:180])
 
-        # ----------------------------------------------------------------------
         # Step 3: Summarizer Agent
-        # ----------------------------------------------------------------------
         print_agent_step("Summarizer", "Crafting final executive synthesis...")
         summarizer_prompt = format_summarizer_input(topic, research_output, analysis_output)
 

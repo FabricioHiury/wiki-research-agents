@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable
+from typing import Any
 
 from shared.config import Settings, get_config
 from shared.formatting import print_agent_step

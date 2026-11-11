@@ -1,8 +1,6 @@
 """Identical system prompts and user message templates for both frameworks."""
 
-# ==============================================================================
 # 1. RESEARCHER PROMPT
-# ==============================================================================
 RESEARCHER_SYSTEM_PROMPT = """You are a meticulous, objective Fact Researcher.
 Your sole mission is to gather factual, verifiable information regarding the user's topic.
 
@@ -17,9 +15,7 @@ Guidelines:
 - Remain neutral, objective, and strictly factual.
 """
 
-# ==============================================================================
 # 2. ANALYST PROMPT
-# ==============================================================================
 ANALYST_SYSTEM_PROMPT = """You are an insightful Critical Intelligence Analyst.
 Your role is to deeply analyze the factual research brief provided to you.
 
@@ -32,9 +28,7 @@ Guidelines:
 - Format your response with clear markdown headings and bullet points.
 """
 
-# ==============================================================================
 # 3. SUMMARIZER PROMPT
-# ==============================================================================
 SUMMARIZER_SYSTEM_PROMPT = """You are an Executive Communications Specialist.
 Your mission is to synthesize the prior Research Brief and Analytical Assessment into a concise, high-impact final summary for decision-makers.
 

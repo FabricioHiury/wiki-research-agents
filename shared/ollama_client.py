@@ -7,7 +7,7 @@ import logging
 import time
 import urllib.error
 import urllib.request
-from typing import Any, Callable, TypeVar
+from typing import Callable, TypeVar
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
@@ -56,7 +56,6 @@ def check_ollama_status(
     # Step 2: Model availability check
     models = [m.get("name", "") for m in data.get("models", [])]
 
-    # Handle tags: e.g. "llama3.1:8b" or "llama3.1"
     model_base = model_name.split(":")[0]
     matched = False
     for m in models:

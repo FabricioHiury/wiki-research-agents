@@ -10,7 +10,6 @@ from strands_impl.agents import (
     create_analyst_agent,
     create_researcher_agent,
     create_summarizer_agent,
-    wikipedia_tool,
 )
 from strands_impl.pipeline import run_strands_pipeline
 

@@ -71,7 +71,6 @@ def search_wikipedia_titles(query: str, limit: int = 3, timeout: int = 15) -> li
 
     try:
         data = _http_get_json(WIKIPEDIA_API_URL, params=params, timeout=timeout)
-        # OpenSearch format: [query, [titles], [descriptions], [urls]]
         if isinstance(data, list) and len(data) >= 2 and isinstance(data[1], list):
             return data[1]
     except Exception as exc:
@@ -157,10 +156,8 @@ def wikipedia_research(query: str, max_chars: int = 2500) -> str:
     # Step 1: Search titles
     titles = search_wikipedia_titles(clean_query, limit=3)
     if not titles:
-        # Try direct lookup of query itself
         titles = [clean_query]
 
-    # Step 2: Try fetching summary of first title, fallback to alternates if needed
     for candidate in titles:
         res = get_wikipedia_page_summary(candidate, max_chars=max_chars)
         status = res.get("status")
@@ -174,7 +171,6 @@ def wikipedia_research(query: str, max_chars: int = 2500) -> str:
         elif status == "disambiguation":
             continue
 
-    # If all candidates failed or returned disambiguation
     first_title = titles[0] if titles else clean_query
     res = get_wikipedia_page_summary(first_title, max_chars=max_chars)
     if res.get("status") == "disambiguation":

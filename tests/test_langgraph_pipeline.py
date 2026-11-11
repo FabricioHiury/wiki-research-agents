@@ -5,7 +5,7 @@ from __future__ import annotations
 import unittest
 from unittest.mock import MagicMock, patch
 
-from langgraph_impl.graph import build_research_graph, run_langgraph_pipeline
+from langgraph_impl.graph import run_langgraph_pipeline
 from langgraph_impl.nodes import analyst_node, researcher_node, summarizer_node
 from shared.config import Settings
 
