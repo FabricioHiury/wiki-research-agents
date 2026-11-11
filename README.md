@@ -325,17 +325,47 @@ make test
 
 ## Lessons Learned & Framework Comparison
 
-Use this section to record your hands-on observations when testing LangGraph and Strands Agents side by side with local models.
+This comparison is based on hands-on local execution on an Apple Silicon M1 (2020) running Ollama inside Docker (`llama3.2:3b` on CPU):
 
 | Evaluation Criterion | LangGraph | Strands Agents |
 | :--- | :--- | :--- |
-| **State Handling** | Explicit `TypedDict` schema (`PipelineGraphState`). State updates are returned as partial dicts merged into the global state. | *[User observation placeholder: Record your impressions on Strands state passing here]* |
-| **Control Flow** | Formal Graph structure (`StateGraph`, `add_node`, `add_edge`, `START`, `END`). Clear compile-time validation of graph topology. | *[User observation placeholder: Record your impressions on Strands control flow here]* |
-| **Tool Definition** | Tools are bound via LangChain tool abstractions (`@tool`, `bind_tools`) or node-level execution. | *[User observation placeholder: Record your impressions on Strands tool definition here]* |
-| **Debugging & Observability** | Graph inspection, state checkpoints, and node-by-node tracing. Can be inspected via LangSmith if configured. | *[User observation placeholder: Record your impressions on debugging Strands agents here]* |
-| **Amount of Code & Boilerplate** | Higher upfront ceremony (defining state schemas, builder nodes, edges, and compiling). | *[User observation placeholder: Record your impressions on Strands code verbosity here]* |
-| **Behavior with Small Local Models** | Requires careful node validation and error handling to handle local model schema quirks. | *[User observation placeholder: Record your impressions on how Strands handled small local models here]* |
-| **When to Choose Each** | *[User observation placeholder: Your criteria for choosing LangGraph in production]* | *[User observation placeholder: Your criteria for choosing Strands Agents in production]* |
+| **State Handling** | **Centralized & Schema-Driven**: Enforces an explicit `TypedDict` (`PipelineGraphState`). Nodes return partial dicts merged by the graph engine. Highly predictable and auditable, but requires upfront schema ceremony even for simple 3-step linear flows. | **Code-First & Decentralized**: State flows naturally as standard Python function arguments and return values (`research_output -> analyst -> summarizer`). Zero schema boilerplate, feels like idiomatic Python, but lacks compile-time state contract enforcement. |
+| **Control Flow** | **Formal Directed Graph**: Uses `StateGraph`, `add_node`, `add_edge`, and `compile()`. Clear topological validation that prevents unreachable states. Ideal for complex workflows with conditional routing or cyclic feedback loops, though slightly verbose for strictly linear pipelines. | **Imperative Composition**: Each agent is an autonomous `Agent(...)` instance invoked like a callable function. Extremely readable, trivial to debug with standard step-through debuggers, and fast to iterate without learning graph abstractions. |
+| **Tool Definition & Setup** | Integrates via LangChain's `@tool` and `ChatOllama.bind_tools`. Tool execution can be handled inside custom nodes or standard prebuilt tool executors. | Uses the `@tool` decorator directly on Python functions, generating JSON schemas from docstrings. **Gotcha encountered**: Client-level settings like `timeout` cannot be passed at the model root and must be passed via `ollama_client_args={"timeout": ...}`. |
+| **Amount of Code** | **~150 lines** of orchestration code (state schemas, node wrappers, builder topology, compiler). | **~80 lines** of orchestration code (agent factory functions and linear invocation). |
+| **Runtime Performance** | **135.80s** on CPU. The graph compilation and state merging abstraction adds negligible overhead compared to local LLM inference time. | **160.36s** on CPU. Execution speed is primarily bounded by Ollama token generation; SDK orchestration overhead is effectively zero. |
 
-### Personal Takeaways & Observations
-> *[User placeholder: Write your final conclusions and recommendations here]*
+---
+
+### Critical Observations: Local Models & Hallucination Tendency
+
+Testing with small local models (`llama3.2:3b` and `llama3.1:8b`) revealed crucial production insights:
+
+1. **Docker VM Memory Allocation on macOS**:
+   - Attempting to load `llama3.1:8b` (4.4 GB buffer) inside Docker Desktop with default 2–4 GB memory allocation caused an immediate crash:
+     ```text
+     llama-server: exit status 1: ggml_aligned_malloc: insufficient memory (attempted to allocate 4402.48 MB)
+     ```
+   - Switching to `llama3.2:3b` (~2.0 GB) resolved the crash completely and ran smoothly within standard Docker resource limits.
+
+2. **The "Fabricated Reference" Hallucination**:
+   - In early test runs, when the Researcher prompt asked for *"Primary Sources or References cited in the material"*, the 3B model lacked bibliography entries in the Wikipedia excerpt and **fabricated academic citations** (e.g., inventing journal volumes for *Turing (1950)* and *Kasparov (1997), Deep Blue, ChessBase*).
+   - **Fix**: Small models require explicit negative constraints. We updated the prompt: *"Cite ONLY the exact Wikipedia article title and URL provided by the tool. Never invent academic paper citations."*
+
+3. **Knowledge Bleed in Summaries**:
+   - Small models easily bleed pre-trained knowledge into executive summaries. In early runs, the Summarizer mentioned *MYCIN, John McCarthy, and AlphaGo*—entities that were never returned by the Wikipedia tool or the Analyst.
+   - **Fix**: The summarizer prompt must explicitly forbid outside trivia: *"Synthesize ONLY what was established in the Research Brief; do NOT introduce external entities or historical claims."*
+
+---
+
+### When to Choose Each in Production
+
+- **Choose LangGraph when**:
+  - Your agent system requires **cycles or self-correction loops** (e.g. Researcher -> Critic -> Researcher retry).
+  - You need **checkpointing and time-travel debugging** (pausing execution for human-in-the-loop review, rolling back state).
+  - Your team values **strict, enterprise-wide state contracts** where every mutation is typed and tracked.
+
+- **Choose Strands Agents when**:
+  - You want a **clean, lightweight, code-first SDK** that runs directly in your existing Python process.
+  - Your workflow is primarily **linear, hierarchical, or task-delegation oriented** without needing complex state machine graphs.
+  - You want **fast onboarding and minimal cognitive overhead**—any Python developer can read and modify the orchestration in minutes.

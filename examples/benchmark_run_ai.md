@@ -162,3 +162,28 @@ Notable individuals and systems in the field of AI include:
 | **LangGraph** | `SUCCESS` | **135.80s** | 3 | 1 |
 | **Strands Agents** | `SUCCESS` | **160.36s** | 3 | 1 |
 
+---
+
+## 4. Post-Run Analysis: Hallucination Discovery & Prompt Mitigation
+
+Examining the raw run outputs above revealed two classic small-model hallucination patterns:
+
+### Observation A: Fabricated Citations in Research Brief
+- **What happened**: In the Strands Researcher output, Section 4 listed formal bibliographic entries:
+  - `Kasparov, G. (1997). Deep Blue. ChessBase, 1-10.`
+  - `Minsky, M. (1961). A Model for the Neural Net. Proceedings of the National Academy of Sciences...`
+- **Why it happened**: The Wikipedia REST API returns the article extract and URL, not the reference footnotes. When the original prompt asked for *"Primary Sources or References cited in the material"*, the 3B model attempted to please the prompt by inventing realistic-sounding citations.
+- **Prompt Engineering Fix**: Updated `RESEARCHER_SYSTEM_PROMPT` to restrict citations strictly to tool-provided data:
+  ```text
+  For references/sources: Cite ONLY the exact Wikipedia article title and URL provided by the tool. Never invent academic papers, journals, volume numbers, or unverified citations.
+  ```
+
+### Observation B: Knowledge Bleed in Executive Summaries
+- **What happened**: The LangGraph final summary mentioned `MYCIN`, `John McCarthy`, and `AlphaGo`—entities that never appeared in the Wikipedia extract or the Analyst output.
+- **Why it happened**: Small models have strong pre-trained associative weights around popular AI history. When asked to summarize a broad subject without explicit boundaries, they blend pre-training memory with the provided context.
+- **Prompt Engineering Fix**: Updated `SUMMARIZER_SYSTEM_PROMPT` with strict negative constraints:
+  ```text
+  Ground your summary STRICTLY in the provided research and analysis.
+  Do NOT introduce new entities, systems, or historical claims (e.g. do NOT mention systems, projects, or individuals unless they were explicitly cited in the research brief).
+  ```
+
