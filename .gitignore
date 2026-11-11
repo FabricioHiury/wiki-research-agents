@@ -1,0 +1,26 @@
+# Environment variables
+.env
+
+# Python virtual environment
+.venv/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Testing and linting caches
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local data & IDE
+.DS_Store
+.idea/
+.vscode/
+ollama_data/
+
