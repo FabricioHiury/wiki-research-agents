@@ -268,10 +268,12 @@ Example output:
 ==============================================================================
 Framework            | Status     | Elapsed (s)  | LLM Calls  | Tool Calls
 ------------------------------------------------------------------------------
-LangGraph            | SUCCESS    | 34.20        | 3          | 1         
-Strands Agents       | SUCCESS    | 31.85        | 3          | 1         
+LangGraph            | SUCCESS    | 135.80       | 3          | 1         
+Strands Agents       | SUCCESS    | 160.36       | 3          | 1         
 ==============================================================================
 ```
+
+> 📄 **Full Output Log**: View the complete real-world execution log, intermediate factual briefs, and analytical outputs in [examples/benchmark_run_ai.md](examples/benchmark_run_ai.md).
 
 ---
 
