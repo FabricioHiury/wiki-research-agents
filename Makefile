@@ -44,3 +44,4 @@ run-strands:
 
 compare:
 	python3 compare.py $(TOPIC)
+

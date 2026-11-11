@@ -185,3 +185,4 @@ def wikipedia_research(query: str, max_chars: int = 2500) -> str:
         )
 
     return f"No detailed Wikipedia article found for topic: '{clean_query}'."
+

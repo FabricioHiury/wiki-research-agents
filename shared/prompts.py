@@ -75,3 +75,4 @@ def format_summarizer_input(topic: str, research_output: str, analysis_output: s
         f"--- END EVALUATION ---\n\n"
         "Produce the final concise executive summary based on the research and analysis above."
     )
+

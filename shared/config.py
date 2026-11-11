@@ -70,3 +70,4 @@ def get_config(reload: bool = False, env_path: Path | None = None) -> Settings:
     if _SETTINGS_INSTANCE is None or reload:
         _SETTINGS_INSTANCE = Settings.from_env(env_path)
     return _SETTINGS_INSTANCE
+

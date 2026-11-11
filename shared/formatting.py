@@ -90,3 +90,4 @@ def print_comparison_table(
             f"{llm_calls:<10} | {tool_calls:<10}"
         )
     print(f"{Colors.BOLD}{'='*78}{Colors.END}\n")
+

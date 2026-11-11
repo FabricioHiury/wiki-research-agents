@@ -32,3 +32,4 @@ fi
 
 echo ""
 echo "Model '${MODEL}' is ready!"
+

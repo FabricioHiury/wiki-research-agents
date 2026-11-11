@@ -20,3 +20,4 @@ class PipelineGraphState(TypedDict, total=False):
     llm_call_count: int
     tool_call_count: int
     errors: list[str]
+
